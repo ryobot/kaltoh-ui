@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Kal-toh test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="three.min.js"></script>
+        <script src="OrbitControls.js"></script>
+<script>
+
+    var scene, camera, renderer, light;
+    var mesh, texture, plane;
+    var controls;
+
+    function init() {
+
+        scene = new THREE.Scene();
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.shadowMapEnabled = true;
+        renderer.setSize( 400, 400 );
+        
+        camera = new THREE.PerspectiveCamera( 40, 1.0, 1, 10000 );
+        camera.position.set(100, 50, 120);
+
+        texture = THREE.ImageUtils.loadTexture( 'Sahara-Beige.jpg' );
+        texture.anisotropy = renderer.getMaxAnisotropy();
+        
+        //material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+        //material = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+        //material = new THREE.MeshBasicMaterial( { map:texture } );
+        //material = new THREE.MeshPhongMaterial({color: 'white'});
+        material = new THREE.MeshPhongMaterial({ map:texture });
+
+        //geometry = new THREE.BoxGeometry( 20, 20, 20 );
+        var loader = new THREE.JSONLoader();
+        loader.load("kaltoh_stage_2.json", function(geometry, materials) {
+            //material = new THREE.MeshFaceMaterial( materials );
+            mesh = new THREE.Mesh( geometry, material );
+            mesh.castShadow = true;
+            //mesh.receiveShadow = true;
+            mesh.position.set(0,-20,0);
+            mesh.scale.set(8,8,8);
+            scene.add( mesh );
+        });
+        
+        //mesh = new THREE.Mesh( geometry, material );
+        //mesh.castShadow = true;
+        //mesh.receiveShadow = true;
+        //mesh.position.set(0,0,0);
+        //scene.add( mesh );
+
+        plane =  new THREE.Mesh(
+                 new THREE.CircleGeometry(50, 50),
+                 new THREE.MeshPhongMaterial({side: THREE.DoubleSide, color: 'white'})
+                 //new THREE.MeshLambertMaterial({side: THREE.DoubleSide,  color: 0xffffff})
+                 );
+        var q = new THREE.Quaternion();
+        q.setFromAxisAngle( new THREE.Vector3( -1, 0, 0 ), Math.PI / 2 );
+        plane.rotation.setFromQuaternion(q);
+        plane.receiveShadow = true;
+        plane.position.set(0,-20,0);
+        scene.add(plane);
+        
+        axis = new THREE.AxisHelper(1000);             
+        scene.add(axis);                              
+        axis.position.set(0,0,0);
+
+        var directionalLight = new THREE.DirectionalLight('#555555', 1);
+        directionalLight.position.set(0, 7, 10);
+        directionalLight.castShadow = true;
+        //directionalLight.shadowCameraVisible = true;
+        directionalLight.shadowMapWidth = 2048;
+        directionalLight.shadowMapHeight = 2048;
+        var d = 1000;
+        directionalLight.shadowCameraLeft = -d;
+        directionalLight.shadowCameraRight = d;
+        directionalLight.shadowCameraTop = d;
+        directionalLight.shadowCameraBottom = -d;
+        directionalLight.shadowCameraNear = 1;
+        directionalLight.shadowCameraFar = 1000;
+        directionalLight.shadowCameraFov = 40;
+        directionalLight.shadowBias = 0.0001;
+        directionalLight.shadowDarkness = 0.5;
+        scene.add(directionalLight);
+
+        var ambientLight = new THREE.AmbientLight('#888888');
+        scene.add(ambientLight);
+
+        document.getElementById("canvas").appendChild( renderer.domElement );
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+    }
+
+    function animate() {
+
+        requestAnimationFrame( animate );
+
+        //mesh.rotation.x += 0.005;
+        //mesh.rotation.y += 0.003;
+
+        controls.update();
+        renderer.render( scene, camera );
+
+    }
+    
+    function display() {
+        init();
+        animate();
+    }
+
+</script>
+
+    </head>
+    <body onload="display()">
+        <div id="canvas"></div>
+    </body>
+</html>
